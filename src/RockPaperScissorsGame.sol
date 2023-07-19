@@ -277,9 +277,13 @@ contract RockPaperScissorsGame is CoinManager {
 
     /// @param _gameId The gameId of the game that you want to check it's state.
     /// @dev It checks if a game has surpased it's deadline. It is intended to avoid Denial of Service since a player can refuse to submit it's choice once he knows that he will lose for example. This way, once the deadline is surpased, the other player can claim it's reward.
+    /// @notice It can only be triggered by one of the players.
 
     function checkGameState(uint256 _gameId) external {
         GameLobby memory game = games[_gameId];
+        if (msg.sender != game.player1 && msg.sender != game.player2){
+            revert NotGamePlayer();
+        }
         if (
             game.gameState != GameState.Finalized && game.gameState != GameState.NotInitialized
                 && game.deadline < block.timestamp

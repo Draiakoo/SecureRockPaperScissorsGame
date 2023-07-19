@@ -37,8 +37,6 @@ contract CoinManager {
         _;
     }
 
-    
-
     function deposit() external payable MoreThanZero(msg.value) {
         balances[msg.sender] += msg.value;
     }
