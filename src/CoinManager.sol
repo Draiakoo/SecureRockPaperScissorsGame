@@ -37,12 +37,7 @@ contract CoinManager {
         _;
     }
 
-    modifier EnoughBalanceAvailable(address _user, uint256 _amount) {
-        if (balances[_user] < _amount) {
-            revert NotEnoughBalance();
-        }
-        _;
-    }
+    
 
     function deposit() external payable MoreThanZero(msg.value) {
         balances[msg.sender] += msg.value;
@@ -59,8 +54,12 @@ contract CoinManager {
         }
     }
 
-    function payBetEntry(address _user, uint256 _betAmount) internal EnoughBalanceAvailable(_user, _betAmount) {
+    function payBetEntry(address _user, uint256 _betAmount) internal {
         balances[_user] -= _betAmount;
+    }
+
+    function payBetToWinner(address _user, uint256 _betAmount) internal {
+        balances[_user] += _betAmount;
     }
 
     function balanceOf(address _user) public view returns (uint256 balance) {
