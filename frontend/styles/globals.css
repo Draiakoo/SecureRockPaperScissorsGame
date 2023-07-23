@@ -1,0 +1,404 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  Note: The styles for this gradient grid background is heavily inspired by the creator of this amazing site (https://dub.sh) – all credits go to them! 
+*/
+
+.main {
+  width: 100vw;
+  min-height: 100vh;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  padding: 120px 24px 160px 24px;
+  pointer-events: none;
+}
+
+.main:before {
+  background: radial-gradient(circle, rgba(2, 0, 36, 0) 0, #fafafa 100%);
+  position: absolute;
+  content: "";
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  top: 0;
+}
+
+.main:after {
+  content: "";
+  background-image: url("/assets/images/grid.svg");
+  z-index: 1;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  opacity: 0.4;
+  filter: invert(1);
+}
+
+.gradient {
+  height: fit-content;
+  z-index: 3;
+  width: 100%;
+  max-width: 640px;
+  background-image: radial-gradient(
+      at 27% 37%,
+      hsla(215, 98%, 61%, 1) 0px,
+      transparent 0%
+    ),
+    radial-gradient(at 97% 21%, hsla(125, 98%, 72%, 1) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(354, 98%, 61%, 1) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(256, 96%, 67%, 1) 0px, transparent 50%),
+    radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 1) 0px, transparent 50%),
+    radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 1) 0px, transparent 50%),
+    radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 1) 0px, transparent 50%);
+  position: absolute;
+  content: "";
+  width: 100%;
+  height: 100%;
+  filter: blur(100px) saturate(150%);
+  top: 80px;
+  opacity: 0.15;
+}
+
+@media screen and (max-width: 640px) {
+  .main {
+    padding: 0;
+  }
+}
+
+/* Tailwind Styles */
+
+.app {
+  @apply relative z-10 flex justify-center items-center flex-col max-w-7xl mx-auto sm:px-16 px-6;
+}
+
+.black_btn {
+  @apply rounded-full border border-black bg-black py-1.5 px-5 text-white transition-all hover:bg-white hover:text-black text-center text-sm font-inter flex items-center justify-center;
+}
+
+.outline_btn {
+  @apply rounded-full border border-black bg-transparent py-1.5 px-5 text-black transition-all hover:bg-black hover:text-white text-center text-sm font-inter flex items-center justify-center;
+}
+
+.head_text {
+  @apply mt-5 text-5xl font-extrabold leading-[1.15] text-black sm:text-6xl;
+}
+
+.orange_gradient {
+  @apply bg-gradient-to-r from-amber-500 via-orange-600 to-yellow-500 bg-clip-text text-transparent;
+}
+
+.green_gradient {
+  @apply bg-gradient-to-r from-green-400 to-green-500 bg-clip-text text-transparent;
+}
+
+.blue_gradient {
+  @apply bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent;
+}
+
+.desc {
+  @apply mt-5 text-lg text-gray-600 sm:text-xl max-w-2xl;
+}
+
+.search_input {
+  @apply block w-full rounded-md border border-gray-200 bg-white py-2.5 font-satoshi pl-5 pr-12 text-sm shadow-lg font-medium focus:border-black focus:outline-none focus:ring-0;
+}
+
+.copy_btn {
+  @apply w-7 h-7 rounded-full bg-white/10 shadow-[inset_10px_-50px_94px_0_rgb(199,199,199,0.2)] backdrop-blur flex justify-center items-center cursor-pointer;
+}
+
+.glassmorphism {
+  @apply rounded-xl border border-gray-200 bg-white/20 shadow-[inset_10px_-50px_94px_0_rgb(199,199,199,0.2)] backdrop-blur p-5;
+}
+
+.prompt_layout {
+  @apply space-y-6 py-8 sm:columns-2 sm:gap-6 xl:columns-3;
+}
+
+/* Feed Component */
+.feed {
+  @apply mt-16 mx-auto w-full max-w-xl flex justify-center items-center flex-col gap-2;
+}
+
+/* Form Component */
+.form_textarea {
+  @apply w-full flex rounded-lg h-[200px] mt-2 p-3 text-sm text-gray-500 outline-0;
+}
+
+.form_input {
+  @apply w-full flex rounded-lg mt-2 p-3 text-sm text-gray-500 outline-0;
+}
+
+/* Nav Component */
+.logo_text {
+  @apply max-sm:hidden font-satoshi font-semibold text-lg text-black tracking-wide;
+}
+
+.dropdown {
+  @apply absolute right-0 top-full mt-3 w-full p-5 rounded-lg bg-white min-w-[210px] flex flex-col gap-2 justify-end items-end;
+}
+
+.dropdown_link {
+  @apply text-sm font-inter text-gray-700 hover:text-gray-500 font-medium;
+}
+
+/* PromptCard Component */
+.prompt_card {
+  @apply flex-1 break-inside-avoid rounded-lg border border-gray-300 bg-white/20 bg-clip-padding p-6 pb-4 backdrop-blur-lg backdrop-filter md:w-[360px] w-full h-fit;
+}
+
+.flex-center {
+  @apply flex justify-center items-center;
+}
+
+.flex-start {
+  @apply flex justify-start items-start;
+}
+
+.flex-end {
+  @apply flex justify-end items-center;
+}
+
+.flex-between {
+  @apply flex justify-between items-center;
+}
+
+.button {
+  display: flex;
+  height: 2.5rem;
+  touch-action: none;
+  user-select: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  border-style: none;
+  background-color: hsl(204 100% 40%);
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: hsl(204 20% 100%);
+  text-decoration-line: none;
+  border-radius: 0.375rem;
+}
+
+.button:hover {
+  background-color: hsl(204 100% 32%);
+}
+
+.button[aria-disabled="true"] {
+  opacity: 0.5;
+}
+
+.button:focus-visible,
+.button[data-focus-visible] {
+  outline: 2px solid hsl(204 100% 40%);
+  outline-offset: 2px;
+}
+
+@media (min-width: 640px) {
+  .button {
+    gap: 0.5rem;
+  }
+}
+
+.secondary {
+  background-color: transparent;
+  color: currentColor;
+}
+
+.secondary:hover {
+  background-color: hsl(204 10% 10% / 0.05);
+}
+
+:is(.dark .secondary) {
+  background-color: transparent;
+}
+
+:is(.dark .secondary:hover) {
+  background-color: hsl(204 20% 100% / 0.05);
+}
+
+.backdrop {
+  background-color: hsl(204 10% 10% / 0.1);
+  backdrop-filter: blur(4px);
+}
+
+:is(.dark .backdrop) {
+  background-color: hsl(204 10% 10% / 0.5);
+}
+
+.dialog {
+  position: fixed;
+  inset: 0.75rem;
+  z-index: 50;
+  margin: auto;
+  display: flex;
+  height: fit-content;
+  max-height: calc(100vh - 2 * 0.75rem);
+  flex-direction: column;
+  gap: 1rem;
+  overflow: auto;
+  border-radius: 0.75rem;
+  background-color: hsl(204 20% 100%);
+  padding: 1rem;
+  color: hsl(204 10% 10%);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+:is(.dark .dialog) {
+  border-width: 1px;
+  border-style: solid;
+  border-color: hsl(204 3% 26%);
+  background-color: hsl(204 3% 18%);
+  color: hsl(204 20% 100%);
+}
+
+@media (min-width: 640px) {
+  .dialog {
+    top: 10vh;
+    bottom: 10vh;
+    margin-top: 0px;
+    max-height: 80vh;
+    width: 420px;
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+.heading {
+  margin: 0px;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: hsl(204 20% 100%);
+  padding: 1rem;
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+:is(.dark .wrapper) {
+  background-color: hsl(204 3% 18%);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.25),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.toast-container {
+  margin-right: var(--scrollbar-width, 0);
+}
+
+.image-highlighted {
+  margin-left: auto;
+  margin-right: auto;
+  background-color: white;
+  border-radius: 0.5rem;
+}
+
+.image-nothighlighted {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tab-highlighted-left {
+  margin-left: auto;
+  margin-right: 0.25rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 0.375rem;;
+}
+
+.tab-highlighted-right {
+  margin-right: auto;
+  margin-left: 0.25rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 0.375rem;;
+}
+
+.tab-nothighlighted-left {
+  margin-left: auto;
+  margin-right: 0.25rem;
+  border-radius: 0.5rem;
+  padding: 0.375rem;;
+}
+
+.tab-nothighlighted-right {
+  margin-right: auto;
+  margin-left: 0.25rem;
+  border-radius: 0.5rem;
+  padding: 0.375rem;;
+}
+
+.custom-button {
+  font-weight: 100;
+  font-size: 14px;
+  color: #fff;
+  background-color: #0066CC;
+  padding: 10px 48px;
+  border: solid #313940 2px;
+  box-shadow: rgb(166, 166, 166) 5px 5px 25px 5px;
+  border-radius: 25px;
+  transition : 661ms;
+  transform: translateY(0);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+}
+
+.custom-button:hover {
+  transition : 661ms;
+  padding: 10px 33px;
+  transform : translateY(-0px);
+  background-color: #fff;
+  color: #13191f;
+  border: solid 2px #0066cc;
+}
+
+/* Action link stylings */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Style the professional link */
+.professional-link {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 2px solid #007bff; /* Use your desired border color here */
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #ffffff; /* Text color for the link */
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* Hover effect for the link */
+.professional-link:hover {
+  background-color: #0056b3; /* Use a slightly darker shade for hover */
+  border-color: #0056b3;
+  color: #ffffff; /* Text color for the link on hover */
+}
