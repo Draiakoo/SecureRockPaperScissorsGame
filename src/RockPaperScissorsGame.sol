@@ -39,6 +39,8 @@ contract RockPaperScissorsGame is CoinManager {
     error GameSpotReserved();
     error InvalidChoice();
     error ChoiceAndPasswordNotMatching();
+    error YouCanNotJoinAGameYouCreated();
+    error NotGameCreator();
 
     /// @dev Different available choices. By default, the choice is encrypted because it has to be revealed with the hash
     enum Choice {
@@ -95,9 +97,9 @@ contract RockPaperScissorsGame is CoinManager {
     bytes32 public immutable scissorsHash;
 
     event GameCreated(uint256 indexed gameId, address indexed creator, uint256 indexed betAmount);
-    event PlayerJoin(uint256 indexed gameId, address indexed player, uint256 indexed betAmount);
+    event GameStarted(uint256 indexed gameId, address indexed player, uint256 indexed betAmount);
     event GameFinished(
-        uint256 indexed gameId, address indexed winner, uint256 indexed betAmount, address player1, address player2
+        uint256 indexed gameId, address indexed winner, uint256 indexed betAmount
     );
 
     /// @dev Modifier to check if the game is in a specific state
@@ -148,7 +150,7 @@ contract RockPaperScissorsGame is CoinManager {
         EnoughBalanceAvailable(msg.sender, _betAmount)
         MinimumGameDuration1day(_gameDuration)
     {
-        payBetEntry(msg.sender, _betAmount);
+        payBetEntry(msg.sender, _betAmount, gameIdCounter);
         GameLobby storage newGame = games[gameIdCounter];
         newGame.player1 = msg.sender;
         if (_secondPlayer != address(0)) {
@@ -163,6 +165,22 @@ contract RockPaperScissorsGame is CoinManager {
         }
     }
 
+    /// @param _gameId The gameId of the game that you want to cancel.
+    /// @dev It checks if the game is LookingForOpponent, the deadline has not expired and the sender is the game creator.
+    /// @notice This function enables the game creator to cancel the game and get his bet amount back. A game is only cancellable in "waitingForOpponent" state.
+
+    function cancelGameLobby(uint256 _gameId) external 
+        GameLobbyInSpecificState(_gameId, GameState.LookingForOpponent)
+        NotExpiredGame(_gameId)
+    {
+        GameLobby storage gameInfo = games[_gameId];
+        if(gameInfo.player1 != msg.sender){
+            revert NotGameCreator();
+        }
+        payBetToWinner(msg.sender, gameInfo.betAmount, _gameId);
+        delete games[_gameId];
+    }
+
     /// @param _gameId The gameId of the game that you want to join.
     /// @dev It checks if the game is LookingForOpponent, the sender has enough balance to pay the game bet.
     /// @notice If the second slot is reserved for somebody it registers the sender if it was the address reserved or reverts if not. On the other hand, if the spot was free it just registers the sender.
@@ -174,20 +192,23 @@ contract RockPaperScissorsGame is CoinManager {
         NotExpiredGame(_gameId)
     {
         GameLobby storage newGame = games[_gameId];
+        if(newGame.player1 == msg.sender){
+            revert YouCanNotJoinAGameYouCreated();
+        }
         address secondPlayer = games[_gameId].player2;
         if (secondPlayer != address(0)) {
             if (msg.sender == secondPlayer) {
-                payBetEntry(msg.sender, games[_gameId].betAmount);
+                payBetEntry(msg.sender, games[_gameId].betAmount, _gameId);
                 newGame.gameState = GameState.WaitingForSubmits;
-                emit PlayerJoin(_gameId, msg.sender, newGame.betAmount);
+                emit GameStarted(_gameId, msg.sender, newGame.betAmount);
             } else {
                 revert GameSpotReserved();
             }
         } else {
-            payBetEntry(msg.sender, games[_gameId].betAmount);
+            payBetEntry(msg.sender, games[_gameId].betAmount, _gameId);
             newGame.player2 = msg.sender;
             newGame.gameState = GameState.WaitingForSubmits;
-            emit PlayerJoin(_gameId, msg.sender, newGame.betAmount);
+            emit GameStarted(_gameId, msg.sender, newGame.betAmount);
         }
     }
 
@@ -325,14 +346,14 @@ contract RockPaperScissorsGame is CoinManager {
 
         // Update balances for winner
         if (winner == address(0)) {
-            payBetToWinner(game.player1, game.betAmount);
-            payBetToWinner(game.player2, game.betAmount);
+            payBetToWinner(game.player1, game.betAmount, _gameId);
+            payBetToWinner(game.player2, game.betAmount, _gameId);
         } else {
-            payBetToWinner(winner, game.betAmount * 2);
+            payBetToWinner(winner, game.betAmount * 2, _gameId);
         }
 
         // Emit an event to track results
-        emit GameFinished(_gameId, winner, game.betAmount, game.player1, game.player2);
+        emit GameFinished(_gameId, winner, game.betAmount);
 
         // Delete game struct to free space
         // delete games[_gameId];

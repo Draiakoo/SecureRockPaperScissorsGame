@@ -402,3 +402,21 @@ a {
   border-color: #0056b3;
   color: #ffffff; /* Text color for the link on hover */
 }
+
+/* Image transition */
+.imageContainer {
+  position: relative;
+  overflow: hidden;
+  width: 50vh;
+  height: 35vh;
+}
+
+.image {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+
+.active {
+  opacity: 1;
+}

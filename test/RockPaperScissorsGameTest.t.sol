@@ -117,6 +117,12 @@ contract RockPaperScissorsGameTest is StdCheats, Test {
         gameContract.joinGameLobby(0);
     }
 
+    function testJoinGameLobbyCreatorCanNotJoin() public DepositAmount(40 ether, 20 ether) Player1CreateGame(true) {
+        vm.prank(player1);
+        vm.expectRevert(RockPaperScissorsGame.YouCanNotJoinAGameYouCreated.selector);
+        gameContract.joinGameLobby(0);
+    }
+
     function testJoinGameLobbyReservedLobbyNotAuthorized()
         public
         DepositAmount(20 ether, 20 ether)
@@ -228,6 +234,19 @@ contract RockPaperScissorsGameTest is StdCheats, Test {
         assert(gameStats.gameState == RockPaperScissorsGame.GameState.WaitingForChoiceDecryption);
     }
 
+    function testSubmitHashSecondPlayerAndFirst() public CreateAndFillGame {
+        bytes32 hashToSubmit1 = keccak256(abi.encodePacked("Rock", "secretPassword"));
+        bytes32 hashToSubmit2 = keccak256(abi.encodePacked("Paper", "secretPassword"));
+        vm.prank(player2);
+        gameContract.submitHash(0, hashToSubmit2);
+        vm.prank(player1);
+        gameContract.submitHash(0, hashToSubmit1);
+        RockPaperScissorsGame.GameLobby memory gameStats = gameContract.gameInformation(0);
+        assertEq(gameStats.player1HashSubmit, hashToSubmit1);
+        assertEq(gameStats.player2HashSubmit, hashToSubmit2);
+        assert(gameStats.gameState == RockPaperScissorsGame.GameState.WaitingForChoiceDecryption);
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////        Test submitChoice function        /////////////////////////////////
@@ -293,7 +312,7 @@ contract RockPaperScissorsGameTest is StdCheats, Test {
         gameContract.submitChoice(0, "Rock", "SecretPassword1");
     }
 
-    function testSubmitChoiceSubmitedHashNotMatching()
+    function testSubmitChoiceSubmitedHashNotMatchingPlayer1()
         public
         CreateGameFillAndSubmitHash(
             keccak256(abi.encodePacked("Rock", "SecretPassword1")),
@@ -303,6 +322,18 @@ contract RockPaperScissorsGameTest is StdCheats, Test {
         vm.prank(player1);
         vm.expectRevert(RockPaperScissorsGame.ChoiceAndPasswordNotMatching.selector);
         gameContract.submitChoice(0, "Rock", "WrongPassword");
+    }
+
+    function testSubmitChoiceSubmitedHashNotMatchingPlayer2()
+        public
+        CreateGameFillAndSubmitHash(
+            keccak256(abi.encodePacked("Rock", "SecretPassword1")),
+            keccak256(abi.encodePacked("Paper", "SecretPassword2"))
+        )
+    {
+        vm.prank(player2);
+        vm.expectRevert(RockPaperScissorsGame.ChoiceAndPasswordNotMatching.selector);
+        gameContract.submitChoice(0, "Paper", "WrongPassword");
     }
 
     function testSubmitChoiceFirstPlayerNotSecond()
@@ -346,6 +377,23 @@ contract RockPaperScissorsGameTest is StdCheats, Test {
         gameContract.submitChoice(0, "Rock", "SecretPassword1");
         vm.prank(player2);
         gameContract.submitChoice(0, "Paper", "SecretPassword2");
+        RockPaperScissorsGame.GameLobby memory gameStats = gameContract.gameInformation(0);
+        assert(uint8(gameStats.player1DecryptedChoice) == uint8(RockPaperScissorsGame.Choice.Rock));
+        assert(uint8(gameStats.player2DecryptedChoice) == uint8(RockPaperScissorsGame.Choice.Paper));
+        assert(gameStats.gameState == RockPaperScissorsGame.GameState.Finalized);
+    }
+
+    function testSubmitChoiceSecondPlayerAndFirst()
+        public
+        CreateGameFillAndSubmitHash(
+            keccak256(abi.encodePacked("Rock", "SecretPassword1")),
+            keccak256(abi.encodePacked("Paper", "SecretPassword2"))
+        )
+    {
+        vm.prank(player2);
+        gameContract.submitChoice(0, "Paper", "SecretPassword2");
+        vm.prank(player1);
+        gameContract.submitChoice(0, "Rock", "SecretPassword1");
         RockPaperScissorsGame.GameLobby memory gameStats = gameContract.gameInformation(0);
         assert(uint8(gameStats.player1DecryptedChoice) == uint8(RockPaperScissorsGame.Choice.Rock));
         assert(uint8(gameStats.player2DecryptedChoice) == uint8(RockPaperScissorsGame.Choice.Paper));
@@ -688,6 +736,49 @@ contract RockPaperScissorsGameTest is StdCheats, Test {
         assertEq(balancePlayer1Before + betAmount, balancePlayer1After);
         assertEq(balancePlayer2Before + betAmount, balancePlayer2After);
         assert(gameState == RockPaperScissorsGame.GameState.Finalized);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////        Test cancelGameLobby function        /////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    function testCancelGameLobbyWrongState() public DepositAmount(20 ether, 20 ether) CreateAndFillGame{
+        vm.prank(player1);
+        vm.expectRevert(RockPaperScissorsGame.WrongGameState.selector);
+        gameContract.cancelGameLobby(0);
+    }
+
+    function testCancelGameLobbyExpiredGame() public DepositAmount(20 ether, 20 ether) Player1CreateGame(false){
+        skip(20 days);
+        vm.prank(player1);
+        vm.expectRevert(RockPaperScissorsGame.GameExpired.selector);
+        gameContract.cancelGameLobby(0);
+    }
+
+    function testCancelGameLobbyNotCreator() public DepositAmount(20 ether, 20 ether) Player1CreateGame(false){
+        vm.prank(player2);
+        vm.expectRevert(RockPaperScissorsGame.NotGameCreator.selector);
+        gameContract.cancelGameLobby(0);
+    }
+
+    function testCancelGameLobbySuccess() public DepositAmount(20 ether, 20 ether) Player1CreateGame(false){
+        uint256 player1BalanceBefore = gameContract.balanceOf(player1);
+        vm.prank(player1);
+        gameContract.cancelGameLobby(0);
+        RockPaperScissorsGame.GameLobby memory gameInfo = gameContract.gameInformation(0);
+        uint256 player1BalanceAfter = gameContract.balanceOf(player1);
+        assertEq(player1BalanceBefore + 20 ether, player1BalanceAfter);
+        assertEq(gameInfo.player1, address(0));
+        assertEq(gameInfo.player2, address(0));
+        assertEq(gameInfo.betAmount, 0);
+        assertEq(gameInfo.player1HashSubmit, bytes32(0x0));
+        assertEq(gameInfo.player2HashSubmit, bytes32(0x0));
+        assert(uint8(gameInfo.player1DecryptedChoice) == uint8(RockPaperScissorsGame.Choice.Encrypted));
+        assert(uint8(gameInfo.player2DecryptedChoice) == uint8(RockPaperScissorsGame.Choice.Encrypted));
+        assert(gameInfo.gameState == RockPaperScissorsGame.GameState.NotInitialized);
+        assertEq(gameInfo.deadline, 0);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////

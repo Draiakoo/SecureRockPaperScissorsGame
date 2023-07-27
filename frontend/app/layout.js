@@ -7,9 +7,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <>
-      <Nav />
-      {children}
-    </>
+    <html lang="en">
+      <body>
+        <Nav />
+        {children}
+      </body>
+    </html>
   )
 }
