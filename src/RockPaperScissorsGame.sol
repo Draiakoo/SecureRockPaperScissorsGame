@@ -96,11 +96,12 @@ contract RockPaperScissorsGame is CoinManager {
     bytes32 public immutable paperHash;
     bytes32 public immutable scissorsHash;
 
-    event GameCreated(uint256 indexed gameId, address indexed creator, uint256 indexed betAmount);
-    event GameStarted(uint256 indexed gameId, address indexed player, uint256 indexed betAmount);
+    event GameCreated(uint256 indexed gameId, address indexed creator, address indexed player2, uint256 betAmount, uint256 expirationDate, uint8 state);
+    event GameStarted(uint256 indexed gameId, address indexed opponent, uint8 indexed state);
     event GameFinished(
-        uint256 indexed gameId, address indexed winner, uint256 indexed betAmount
+        uint256 indexed gameId, address indexed winner, uint8 indexed state
     );
+    event GameCancelled(uint256 indexed gameId, uint8 indexed state);
 
     /// @dev Modifier to check if the game is in a specific state
     modifier GameLobbyInSpecificState(uint256 _gameId, GameState state) {
@@ -159,7 +160,7 @@ contract RockPaperScissorsGame is CoinManager {
         newGame.betAmount = _betAmount;
         newGame.gameState = GameState.LookingForOpponent;
         newGame.deadline = block.timestamp + _gameDuration;
-        emit GameCreated(gameIdCounter, msg.sender, _betAmount);
+        emit GameCreated(gameIdCounter, msg.sender, _secondPlayer, _betAmount, block.timestamp + _gameDuration, 1);
         unchecked {
             gameIdCounter++;
         }
@@ -179,6 +180,7 @@ contract RockPaperScissorsGame is CoinManager {
         }
         payBetToWinner(msg.sender, gameInfo.betAmount, _gameId);
         delete games[_gameId];
+        emit GameCancelled(_gameId, 3);
     }
 
     /// @param _gameId The gameId of the game that you want to join.
@@ -200,7 +202,7 @@ contract RockPaperScissorsGame is CoinManager {
             if (msg.sender == secondPlayer) {
                 payBetEntry(msg.sender, games[_gameId].betAmount, _gameId);
                 newGame.gameState = GameState.WaitingForSubmits;
-                emit GameStarted(_gameId, msg.sender, newGame.betAmount);
+                emit GameStarted(_gameId, msg.sender, 2);
             } else {
                 revert GameSpotReserved();
             }
@@ -208,7 +210,7 @@ contract RockPaperScissorsGame is CoinManager {
             payBetEntry(msg.sender, games[_gameId].betAmount, _gameId);
             newGame.player2 = msg.sender;
             newGame.gameState = GameState.WaitingForSubmits;
-            emit GameStarted(_gameId, msg.sender, newGame.betAmount);
+            emit GameStarted(_gameId, msg.sender, 2);
         }
     }
 
@@ -353,7 +355,7 @@ contract RockPaperScissorsGame is CoinManager {
         }
 
         // Emit an event to track results
-        emit GameFinished(_gameId, winner, game.betAmount);
+        emit GameFinished(_gameId, winner, 3);
 
         // Delete game struct to free space
         // delete games[_gameId];

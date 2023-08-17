@@ -1,7 +1,7 @@
-This project is a simple rock paper scissors game that is intended to be secured on-chain so nobody could try to get advantage against other players. It is focused in the security aspect more than the complexity of the game.
+This is my first project built in a blockchain made 100% by me. It is implemented a way to securely play the mythic rock paper scissors game in a manner that players can not cheat. The web design is awful because web design is not my main focus since I have been building just the functionality.
 
-TODO list:
-    - DecryptChoice function
-    - CheckResult function
-    - Distribute tokens when winning the game
-    - The entire UI for the interaction
+Frontend repo:
+https://github.com/Draiakoo/RockPaperScissors-frontend
+
+Deployed side:
+onchainrockpaperscissorsgame.netlify.app
